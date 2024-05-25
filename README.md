@@ -109,11 +109,7 @@ This project involves building a complete data engineering pipeline on AWS Cloud
 ### Running the Project
 
 1. **Data Extraction and Transformation:**
-   - Run the Python scripts to extract and transform data.
-   ```sh
-   python extract_data.py
-   python transform_data.py
-   ```
+   - Run the Airflow Dag to extract and transform data.
 
 2. **Upload transformed data to S3:**
    - Ensure the transformed data is uploaded to the designated S3 bucket.
