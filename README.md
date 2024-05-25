@@ -101,9 +101,9 @@ This project involves building a complete data engineering pipeline on AWS Cloud
    ```sh
    git clone https://github.com//tejasjbansal/Redfin-Data-Pipeline.git
    ```
-2. **Install Python dependencies:**
+2. **Install all dependencies:**
    ```sh
-   pip install -r requirements.txt
+   bash setup_redfin.sh
    ```
 
 ### Running the Project
