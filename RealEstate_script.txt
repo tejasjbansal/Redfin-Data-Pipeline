@@ -1,0 +1,87 @@
+-- Drop the existing database if it exists
+DROP DATABASE IF EXISTS redfin_database_1;
+
+-- Create a new database
+CREATE DATABASE redfin_database_1;
+
+-- Create a new schema
+CREATE SCHEMA redfin_database_1.redfin_schema;
+
+-- Truncate the table if it exists
+TRUNCATE TABLE redfin_database_1.redfin_schema.redfin_table;
+
+-- Create or replace the table with specified columns
+CREATE OR REPLACE TABLE redfin_database_1.redfin_schema.redfin_table (
+    period_begin DATE,
+    period_end DATE,
+    period_duration INT,
+    region_type STRING,
+    region_type_id INT,
+    table_id INT,
+    is_seasonally_adjusted STRING,
+    city STRING,
+    state STRING,
+    state_code STRING,
+    property_type STRING,
+    property_type_id INT,
+    median_sale_price FLOAT,
+    median_list_price FLOAT,
+    median_ppsf FLOAT,
+    median_list_ppsf FLOAT,
+    homes_sold FLOAT,
+    inventory FLOAT,
+    months_of_supply FLOAT,
+    median_dom FLOAT,
+    avg_sale_to_list FLOAT,
+    sold_above_list FLOAT,
+    parent_metro_region_metro_code STRING,
+    last_updated DATETIME,
+    period_begin_in_years STRING,
+    period_end_in_years STRING,
+    period_begin_in_months STRING,
+    period_end_in_months STRING
+);
+
+-- Select all records from the table, limited to 10 rows
+SELECT * FROM redfin_database_1.redfin_schema.redfin_table LIMIT 10;
+
+-- Get the count of records in the table
+SELECT COUNT(*) FROM redfin_database_1.redfin_schema.redfin_table;
+
+-- Create a new schema for file format objects
+CREATE SCHEMA redfin_database_1.file_format_schema;
+
+-- Create or replace a CSV file format
+CREATE OR REPLACE FILE FORMAT redfin_database_1.file_format_schema.format_csv
+    TYPE = 'CSV'
+    FIELD_DELIMITER = ','
+    RECORD_DELIMITER = '\n'
+    SKIP_HEADER = 1;
+
+-- Create a new schema for external staging
+CREATE SCHEMA redfin_database_1.external_stage_schema;
+
+-- Create or replace an external stage pointing to the S3 bucket
+CREATE OR REPLACE STAGE redfin_database_1.external_stage_schema.redfin_ext_stage_yml 
+    URL='s3://redfin-transform-data-yml/'
+    CREDENTIALS=(AWS_KEY_ID='xxxxx' AWS_SECRET_KEY='xxxx')
+    FILE_FORMAT = redfin_database_1.file_format_schema.format_csv;
+
+-- List the files in the external stage
+LIST @redfin_database_1.external_stage_schema.redfin_ext_stage_yml;
+
+-- Create a new schema for Snowpipe
+CREATE OR REPLACE SCHEMA redfin_database_1.snowpipe_schema;
+
+-- Create or replace a Snowpipe for auto-ingesting data
+CREATE OR REPLACE PIPE redfin_database_1.snowpipe_schema.redfin_snowpipe
+AUTO_INGEST = TRUE
+AS 
+COPY INTO redfin_database_1.redfin_schema.redfin_table
+FROM @redfin_database_1.external_stage_schema.redfin_ext_stage_yml;
+
+-- Describe the Snowpipe
+DESC PIPE redfin_database_1.snowpipe_schema.redfin_snowpipe;
+
+-- Select all records from the table, limited to 10 rows
+SELECT * FROM redfin_database_1.redfin_schema.redfin_table LIMIT 10;
